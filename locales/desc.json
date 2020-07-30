@@ -1,0 +1,20 @@
+{
+  "covid": {
+    "confirmed": "This is sample description",
+    "recovered": "Use to save document",
+    "death": "",
+    "searchHintText": "",
+    "nothing": "",
+    "navigate": "",
+    "detail": "",
+    "expand": "",
+    "collapse": "",
+    "symptom": "",
+    "whatShouldYouDo": "",
+    "prevention": "",
+    "general": "",
+    "mortality": "",
+    "recoveryRate": "",
+    "increaseRate": ""
+  }
+}

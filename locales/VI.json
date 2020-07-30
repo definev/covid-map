@@ -1,0 +1,20 @@
+{
+  "covid": {
+    "confirmed": "Ghi nhận",
+    "recovered": "Hồi phục",
+    "death": "Tử vong",
+    "searchHintText": "Tìm kiếm quốc gia (theo mã quốc gia hoặc tên tiếng Anh)",
+    "nothing": "Không có lịch sử tìm kiếm",
+    "navigate": "Di chuyển",
+    "detail": "Chi tiết",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "symptom": "Triệu chứng",
+    "whatShouldYouDo": "Bạn nên làm gì?",
+    "prevention": "Phòng tránh",
+    "general": "Phân tích chung",
+    "mortality": "Tỉ lệ tử vong",
+    "recoveryRate": "Tỉ lệ hồi phục",
+    "increaseRate": "Tỷ lệ tăng nhiễm"
+  }
+}

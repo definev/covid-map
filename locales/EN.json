@@ -1,0 +1,20 @@
+{
+  "covid": {
+    "confirmed": "Confirmed",
+    "recovered": "Recovered",
+    "death": "Deaths",
+    "searchHintText": "Search for countries (by country code or English name)",
+    "nothing": "There is no search history",
+    "navigate": "Navigate",
+    "detail": "Detail",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "symptom": "Symptom",
+    "whatShouldYouDo": "What should you do?",
+    "prevention": "Prevention",
+    "general": "General analysis",
+    "mortality": "Mortality",
+    "recoveryRate": "Recovery rate",
+    "increaseRate": "Increased infection rate"
+  }
+}
