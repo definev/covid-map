@@ -1,6 +1,6 @@
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_challenger/widgets/animated_text.dart';
+import 'package:covid_map/widgets/animated_text.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CaseTile extends StatefulWidget {

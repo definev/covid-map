@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_challenger/utils/style.dart';
+import 'package:covid_map/utils/style.dart';
 
 class AnimatedText extends StatefulWidget {
   final int oldNumber;

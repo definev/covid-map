@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_challenger/model/covid_tile.dart';
-import 'package:flutter_challenger/utils/style.dart';
+import 'package:covid_map/model/covid_tile.dart';
+import 'package:covid_map/utils/style.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 

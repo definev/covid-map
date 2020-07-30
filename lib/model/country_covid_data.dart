@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:flutter_challenger/model/covid_data.dart';
+import 'package:covid_map/model/covid_data.dart';
 
 CountryCovidData countryCovidDataFromJson(String str) =>
     CountryCovidData.fromJson(json.decode(str));

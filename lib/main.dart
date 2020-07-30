@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_challenger/app.dart';
-import 'package:flutter_challenger/cache/flutter_challenge_cache.dart';
+import 'package:covid_map/app.dart';
+import 'package:covid_map/cache/flutter_challenge_cache.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

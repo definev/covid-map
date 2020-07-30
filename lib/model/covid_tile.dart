@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'package:flutter_challenger/resources/resources.dart';
+import 'package:covid_map/resources/resources.dart';
 
 CovidTile covidTileFromJson(String str) => CovidTile.fromJson(json.decode(str));
 

@@ -1,4 +1,4 @@
-# flutter_challenger
+# covid_map
 
 A new Flutter project.
 

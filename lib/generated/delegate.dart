@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_challenger/generated/locale_base.dart';
+import 'package:covid_map/generated/locale_base.dart';
 
 class LocDelegate extends LocalizationsDelegate<LocaleBase> {
   const LocDelegate();

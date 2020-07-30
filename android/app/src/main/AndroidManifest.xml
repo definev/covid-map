@@ -6,7 +6,7 @@
 	additional functionality it is fine to subclass or reimplement
 	FlutterApplication and put your custom class here.
 	-->
-	<application android:name="io.flutter.app.FlutterApplication" android:label="flutter_challenger" android:icon="@mipmap/ic_launcher">
+	<application android:name="io.flutter.app.FlutterApplication" android:label="covid_map" android:icon="@mipmap/ic_launcher">
 		<meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyDuvddDD1X6chXF1zIp7XY2XKaVKJpUegw" />
 		<activity android:name=".MainActivity" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
 			<!--

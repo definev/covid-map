@@ -1,8 +1,8 @@
-import 'package:flutter_challenger/api/flutter_challenge_api.dart';
-import 'package:flutter_challenger/cache/cache_route/cache_route.dart';
-import 'package:flutter_challenger/model/country_covid_data.dart';
-import 'package:flutter_challenger/model/country_geo_data.dart';
-import 'package:flutter_challenger/model/covid_data.dart';
+import 'package:covid_map/api/flutter_challenge_api.dart';
+import 'package:covid_map/cache/cache_route/cache_route.dart';
+import 'package:covid_map/model/country_covid_data.dart';
+import 'package:covid_map/model/country_geo_data.dart';
+import 'package:covid_map/model/covid_data.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';

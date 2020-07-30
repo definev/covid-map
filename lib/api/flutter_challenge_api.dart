@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter_challenger/api/api_route/covid_api_route.dart';
-import 'package:flutter_challenger/model/country_covid_data.dart';
-import 'package:flutter_challenger/model/country_geo_data.dart';
-import 'package:flutter_challenger/model/covid_data.dart';
+import 'package:covid_map/api/api_route/covid_api_route.dart';
+import 'package:covid_map/model/country_covid_data.dart';
+import 'package:covid_map/model/country_geo_data.dart';
+import 'package:covid_map/model/covid_data.dart';
 import 'package:http/http.dart' as http;
 
 class FlutterChallengerApi {
