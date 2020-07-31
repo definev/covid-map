@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:covid_map/model/covid_marker.dart';
+import 'package:covid_map/utils/fluster.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_controls.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Challenge',
+      title: 'Covid Map',
       localizationsDelegates: [const LocDelegate()],
       debugShowCheckedModeBanner: false,
       home: MyHomePage(),
@@ -212,26 +214,28 @@ class _MyHomePageState extends State<MyHomePage> {
       });
   }
 
+  void onMarkerTab(String countryCode, String location) {
+    setState(() {
+      preCovidData = covidData;
+      CountryCovidData countryCovidData =
+          FlutterChallengeCache.covidCache.getCovidDataByName(countryCode);
+      covidData = countryCovidData.getCovidData();
+      countryCode = countryCovidData.countryCode;
+      _searchHistoryList.add(countryCode);
+      locText = location;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    rootBundle.loadString("assets/map_theme/silver_theme.txt").then((string) {
-      _mapStyle["silver"] = string;
-    });
-    rootBundle.loadString("assets/map_theme/dark_theme.txt").then((string) {
-      _mapStyle["dark"] = string;
-    });
-    rootBundle.loadString("assets/map_theme/aqua_theme.txt").then((string) {
-      _mapStyle["aqua"] = string;
-    });
-    rootBundle.loadString("assets/map_theme/normal_theme.txt").then((string) {
-      _mapStyle["normal"] = string;
-    });
+    rootBundle.loadString("assets/map_theme/retro_theme.txt").then(
+          (string) => _mapStyle["retro"] = string,
+        );
+
     _searchNode = FocusNode();
     covidData = FlutterChallengeCache.covidCache.globalCovidData;
     preCovidData = FlutterChallengeCache.covidCache.globalCovidData;
-
-    print(mounted);
   }
 
   @override
@@ -279,14 +283,28 @@ class _MyHomePageState extends State<MyHomePage> {
                 compassEnabled: false,
                 onMapCreated: (GoogleMapController controller) {
                   mapController = controller;
-                  mapStyle = _mapStyle["silver"];
+                  mapStyle = _mapStyle["retro"];
                   mapController.setMapStyle(mapStyle);
                 },
                 onCameraMove: (position) => _currentCameraPosition = position,
+                markers:
+                    CovidCluster.fluster.clusters([-180, -85, 180, 85], 3).map(
+                  (cluster) {
+                    CovidMarker modCluster = cluster.copyWith(
+                      onMarkerTap: () {
+                        onMarkerTab(cluster.countryGeoData.countryCode,
+                            cluster.countryGeoData.location);
+                      },
+                    );
+                    return modCluster.toMarker();
+                  },
+                ).toSet(),
                 onCameraIdle: () async {
                   print(_currentCameraPosition.target.toString());
+                  print(await mapController.getZoomLevel());
                 },
-                minMaxZoomPreference: MinMaxZoomPreference(5, 20),
+                minMaxZoomPreference:
+                    MinMaxZoomPreference(3.8804433345794678, 5.284524917602539),
               ),
             ),
             // TODO: CASE TILE
@@ -369,10 +387,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             width: width - 110,
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                    blurRadius: 5, color: Colors.grey[100])
-                              ],
                               borderRadius: BorderRadius.circular(4),
                             ),
                             alignment: Alignment.center,
@@ -403,10 +417,6 @@ class _MyHomePageState extends State<MyHomePage> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                    blurRadius: 5, color: Colors.grey[100])
-                              ],
                             ),
                             child: _searchHistoryList.isEmpty
                                 ? Center(
@@ -528,10 +538,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(4),
-                                boxShadow: [
-                                  BoxShadow(
-                                      blurRadius: 5, color: Colors.grey[100])
-                                ],
                               ),
                               child: FlareActor(
                                 "assets/flare/flutter-challenge.flr",
@@ -568,16 +574,22 @@ class _MyHomePageState extends State<MyHomePage> {
                             refresh = true;
                             currentAnimation = SearchState.openSearch;
                             onLoading = true;
-                            Future.delayed(Duration(seconds: 1), () {
+
+                            Future.delayed(Duration(seconds: 1), () async {
+                              await FlutterChallengeCache.covidCache
+                                  .initApiData();
                               setState(() {
                                 currentAnimation = SearchState.loading;
                                 Future.delayed(
-                                  Duration(seconds: 2),
+                                  Duration(seconds: 1, milliseconds: 500),
                                   () {
                                     setState(() {
                                       refresh = false;
                                       currentAnimation =
                                           SearchState.closeSearch;
+                                      preCovidData = covidData;
+                                      covidData = FlutterChallengeCache
+                                          .covidCache.globalCovidData;
                                       onLoading = false;
                                     });
                                   },
@@ -585,7 +597,6 @@ class _MyHomePageState extends State<MyHomePage> {
                               });
                             });
                           });
-                          await initApiData();
                         }
                       },
                       child: Container(
@@ -720,220 +731,231 @@ class _MyHomePageState extends State<MyHomePage> {
                             ? NeverScrollableScrollPhysics()
                             : BouncingScrollPhysics(),
                         controller: _scrollController,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            SizedBox(height: 10),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      locText,
-                                      style: GoogleFonts.rokkitt(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          locText,
+                                          style: GoogleFonts.rokkitt(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                      Container(
+                                        height: 50,
+                                        width: 130,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.yellow,
+                                          // border: Border.all(
+                                          //     color: AppColors.black, width: 1.5),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Center(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                loc.covid.detail,
+                                                style: GoogleFonts.rokkitt(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Icon(
+                                                SimpleLineIcons.info,
+                                                size: 20,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   Container(
-                                    height: 50,
-                                    width: 130,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.yellow,
-                                      // border: Border.all(
-                                      //     color: AppColors.black, width: 1.5),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            loc.covid.detail,
-                                            style: GoogleFonts.rokkitt(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Icon(
-                                            SimpleLineIcons.info,
-                                            size: 20,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                    height: 1.5,
+                                    width: width - 130,
+                                    color: AppColors.black,
+                                    margin: EdgeInsets.only(top: 9.75),
                                   ),
-                                ],
-                              ),
-                              Container(
-                                height: 1.5,
-                                width: width - 130,
-                                color: AppColors.black,
-                                margin: EdgeInsets.only(top: 9.75),
-                              ),
-                              AnimatedContainer(
-                                duration: Duration(milliseconds: 400),
-                                height:
-                                    expandState == ExpandState.close ? 0 : 200,
-                                child: onAnimated
-                                    ? null
-                                    : Stack(
-                                        children: [
-                                          Center(
-                                            child: Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          top: 15),
-                                                  child: Text(
-                                                    loc.covid.general,
-                                                    style: GoogleFonts.rokkitt(
-                                                        fontSize: 27),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceEvenly,
-                                                    children: [
-                                                      Row(
+                                  AnimatedContainer(
+                                    duration: Duration(milliseconds: 400),
+                                    height: expandState == ExpandState.close
+                                        ? 0
+                                        : 200,
+                                    child: onAnimated
+                                        ? null
+                                        : Stack(
+                                            children: [
+                                              Center(
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 15),
+                                                      child: Text(
+                                                        loc.covid.general,
+                                                        style:
+                                                            GoogleFonts.rokkitt(
+                                                                fontSize: 27),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Column(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
                                                                 .spaceEvenly,
                                                         children: [
-                                                          Column(
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceEvenly,
                                                             children: [
-                                                              Text(
-                                                                "${((covidData.totalDeaths / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
-                                                                style: GoogleFonts
-                                                                    .rokkitt(
+                                                              Column(
+                                                                children: [
+                                                                  Text(
+                                                                    "${((covidData.totalDeaths / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
+                                                                    style: GoogleFonts.rokkitt(
                                                                         fontSize:
                                                                             17),
+                                                                  ),
+                                                                  Text(
+                                                                    loc.covid
+                                                                        .mortality,
+                                                                    style: GoogleFonts.rokkitt(
+                                                                        fontSize:
+                                                                            17),
+                                                                  ),
+                                                                ],
                                                               ),
-                                                              Text(
-                                                                loc.covid
-                                                                    .mortality,
-                                                                style: GoogleFonts
-                                                                    .rokkitt(
+                                                              Column(
+                                                                children: [
+                                                                  Text(
+                                                                    "${((covidData.totalRecovered / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
+                                                                    style: GoogleFonts.rokkitt(
                                                                         fontSize:
                                                                             17),
+                                                                  ),
+                                                                  Text(
+                                                                    loc.covid
+                                                                        .recoveryRate,
+                                                                    style: GoogleFonts.rokkitt(
+                                                                        fontSize:
+                                                                            17),
+                                                                  ),
+                                                                ],
                                                               ),
                                                             ],
                                                           ),
-                                                          Column(
-                                                            children: [
-                                                              Text(
-                                                                "${((covidData.totalRecovered / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
-                                                                style: GoogleFonts
-                                                                    .rokkitt(
-                                                                        fontSize:
-                                                                            17),
-                                                              ),
-                                                              Text(
-                                                                loc.covid
-                                                                    .recoveryRate,
-                                                                style: GoogleFonts
-                                                                    .rokkitt(
-                                                                        fontSize:
-                                                                            17),
-                                                              ),
-                                                            ],
+                                                          Center(
+                                                            child: Column(
+                                                              children: [
+                                                                Text(
+                                                                  "${((covidData.newConfirmed / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
+                                                                  style: GoogleFonts
+                                                                      .rokkitt(
+                                                                          fontSize:
+                                                                              17),
+                                                                ),
+                                                                Text(
+                                                                  loc.covid
+                                                                      .increaseRate,
+                                                                  style: GoogleFonts
+                                                                      .rokkitt(
+                                                                          fontSize:
+                                                                              17),
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
-                                                      Center(
-                                                        child: Column(
-                                                          children: [
-                                                            Text(
-                                                              "${((covidData.newConfirmed / covidData.totalConfirmed) * 100).toStringAsFixed(3)} %",
-                                                              style: GoogleFonts
-                                                                  .rokkitt(
-                                                                      fontSize:
-                                                                          17),
-                                                            ),
-                                                            Text(
-                                                              loc.covid
-                                                                  .increaseRate,
-                                                              style: GoogleFonts
-                                                                  .rokkitt(
-                                                                      fontSize:
-                                                                          17),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              Align(
+                                                alignment:
+                                                    Alignment.bottomCenter,
+                                                child: Container(
+                                                  height: 1.5,
+                                                  width: width - 130,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          Align(
-                                            alignment: Alignment.bottomCenter,
-                                            child: Container(
-                                              height: 1.5,
-                                              width: width - 130,
-                                              color: Colors.black,
-                                            ),
+                                  ),
+                                  AnimatedContainer(
+                                    duration: Duration(milliseconds: 400),
+                                    height: expandState == ExpandState.close
+                                        ? 0
+                                        : 45,
+                                    child: onAnimated
+                                        ? null
+                                        : CustomTabBar(
+                                            initPage: 0,
+                                            height:
+                                                expandState == ExpandState.close
+                                                    ? 0
+                                                    : 45,
+                                            width: width - 130,
+                                            onPageChanged: (newPage) {
+                                              _pageController.animateToPage(
+                                                newPage,
+                                                duration:
+                                                    Duration(milliseconds: 400),
+                                                curve: Curves.decelerate,
+                                              );
+                                            },
                                           ),
-                                        ],
-                                      ),
+                                  ),
+                                ],
                               ),
-                              AnimatedContainer(
-                                duration: Duration(milliseconds: 400),
-                                height:
-                                    expandState == ExpandState.close ? 0 : 45,
-                                child: onAnimated
-                                    ? null
-                                    : CustomTabBar(
-                                        initPage: 0,
-                                        height: expandState == ExpandState.close
-                                            ? 0
-                                            : 45,
-                                        width: width - 130,
-                                        onPageChanged: (newPage) {
-                                          _pageController.animateToPage(
-                                            newPage,
-                                            duration:
-                                                Duration(milliseconds: 400),
-                                            curve: Curves.decelerate,
-                                          );
-                                        },
-                                      ),
-                              ),
-                              AnimatedContainer(
-                                duration: Duration(milliseconds: 400),
-                                height: expandState == ExpandState.close
-                                    ? 0
-                                    : height -
-                                        24 -
-                                        20 -
-                                        10 -
-                                        60 -
-                                        11.5 -
-                                        200 -
-                                        57 -
-                                        50 -
-                                        7.5,
-                                padding: const EdgeInsets.only(top: 10),
-                                child: onAnimated
-                                    ? null
-                                    : PageView(
-                                        controller: _pageController,
-                                        physics: NeverScrollableScrollPhysics(),
-                                        children: [
-                                          ListView(
+                            ),
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 400),
+                              height: expandState == ExpandState.close
+                                  ? 0
+                                  : height -
+                                      24 -
+                                      20 -
+                                      10 -
+                                      60 -
+                                      11.5 -
+                                      200 -
+                                      57 -
+                                      50 -
+                                      7.5,
+                              padding: const EdgeInsets.only(top: 10),
+                              child: onAnimated
+                                  ? null
+                                  : PageView(
+                                      controller: _pageController,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: ListView(
                                             physics: BouncingScrollPhysics(),
                                             children: List.generate(
                                               symptom.length,
@@ -964,7 +986,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                               ),
                                             ),
                                           ),
-                                          ListView(
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: ListView(
                                             physics: BouncingScrollPhysics(),
                                             children: List.generate(
                                               prevention.length,
@@ -996,7 +1022,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                               ),
                                             ),
                                           ),
-                                          ListView(
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: ListView(
                                             physics: BouncingScrollPhysics(),
                                             children: List.generate(
                                               stayAtHome.length,
@@ -1028,33 +1058,28 @@ class _MyHomePageState extends State<MyHomePage> {
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                              ),
-                              SizedBox(height: 9.75),
-                              InkWell(
-                                onTap: () {
-                                  onAnimated = true;
-
-                                  if (openSearch && onLoading == false) {
-                                    onSearchTouch("");
-                                    Future.delayed(
-                                      Duration(seconds: 1),
-                                      () {
-                                        Future.delayed(
-                                            Duration(milliseconds: 400),
-                                            () => setState(
-                                                () => onAnimated = false));
-                                        if (expandState == ExpandState.open) {
-                                          setState(() =>
-                                              expandState = ExpandState.close);
-                                        } else {
-                                          setState(() =>
-                                              expandState = ExpandState.open);
-                                        }
-                                      },
-                                    );
-                                  } else {
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                            SizedBox(height: 9.75),
+                            SizedBox(height: 50),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 10, bottom: 20),
+                        child: InkWell(
+                          onTap: () {
+                            if (onAnimated == false) {
+                              if (openSearch && onLoading == false) {
+                                onSearchTouch("");
+                                Future.delayed(
+                                  Duration(seconds: 1),
+                                  () {
                                     Future.delayed(
                                         Duration(milliseconds: 400),
                                         () =>
@@ -1066,71 +1091,80 @@ class _MyHomePageState extends State<MyHomePage> {
                                       setState(
                                           () => expandState = ExpandState.open);
                                     }
-                                  }
-                                },
-                                child: Container(
-                                  height: 50,
-                                  width: width - 130,
-                                  decoration: BoxDecoration(
-                                      color: AppColors.yellow,
-                                      borderRadius: BorderRadius.circular(4)),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        AnimatedCrossFade(
-                                          crossFadeState:
-                                              expandState == ExpandState.close
-                                                  ? CrossFadeState.showFirst
-                                                  : CrossFadeState.showSecond,
-                                          firstChild: Text(
-                                            loc.covid.expand,
-                                            style: GoogleFonts.rokkitt(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          secondChild: Text(
-                                            loc.covid.collapse,
-                                            style: GoogleFonts.rokkitt(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          duration: Duration(milliseconds: 400),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(4),
-                                          height: 30,
-                                          width: 30,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                                color: AppColors.black,
-                                                width: 1.5),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: Transform.scale(
-                                            scale: 2,
-                                            child: FlareActor(
-                                              "assets/flare/arrow.flr",
-                                              animation: expandState ==
-                                                      ExpandState.close
-                                                  ? "downToUp"
-                                                  : "upToDown",
-                                              color: AppColors.black,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                  },
+                                );
+                              } else {
+                                Future.delayed(Duration(milliseconds: 400),
+                                    () => setState(() => onAnimated = false));
+                                if (expandState == ExpandState.open) {
+                                  setState(
+                                      () => expandState = ExpandState.close);
+                                } else {
+                                  setState(
+                                      () => expandState = ExpandState.open);
+                                }
+                              }
+                            }
+                            onAnimated = true;
+                          },
+                          child: Container(
+                            height: 50,
+                            width: width - 130,
+                            decoration: BoxDecoration(
+                                color: AppColors.yellow,
+                                borderRadius: BorderRadius.circular(4)),
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  AnimatedCrossFade(
+                                    crossFadeState:
+                                        expandState == ExpandState.close
+                                            ? CrossFadeState.showFirst
+                                            : CrossFadeState.showSecond,
+                                    firstChild: Text(
+                                      loc.covid.expand,
+                                      style: GoogleFonts.rokkitt(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    secondChild: Text(
+                                      loc.covid.collapse,
+                                      style: GoogleFonts.rokkitt(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    duration: Duration(milliseconds: 400),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(4),
+                                    height: 30,
+                                    width: 30,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: AppColors.black, width: 1.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Transform.scale(
+                                      scale: 2,
+                                      child: FlareActor(
+                                        "assets/flare/arrow.flr",
+                                        animation:
+                                            expandState == ExpandState.close
+                                                ? "downToUp"
+                                                : "upToDown",
+                                        color: AppColors.black,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),

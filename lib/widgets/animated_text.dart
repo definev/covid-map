@@ -21,20 +21,6 @@ class AnimatedText extends StatefulWidget {
 }
 
 class _AnimatedTextState extends State<AnimatedText> {
-  IntTween _tween;
-
-  @override
-  void initState() {
-    super.initState();
-    _tween = IntTween(begin: widget.oldNumber, end: widget.newNumber);
-  }
-
-  @override
-  void didChangeDependencies() {
-    _tween = IntTween(begin: widget.oldNumber, end: widget.newNumber);
-    super.didChangeDependencies();
-  }
-
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<int>(

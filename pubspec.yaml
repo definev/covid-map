@@ -36,7 +36,7 @@ dependencies:
   flare_flutter: ^2.0.5
   flutter_icons: ^1.1.0
   flutter_svg: ^0.18.0
-  provider: 
+  fluster: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -59,6 +59,7 @@ flutter:
     - assets/map_theme/
     - assets/png/coronavirus/png/
     - assets/png/stay-at-home/png/
+    - assets/png/coronavirus/png/marker.png
     - assets/png/flag/
     - locales/
   #   - images/a_dot_ham.jpeg

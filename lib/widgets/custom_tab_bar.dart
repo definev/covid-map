@@ -77,7 +77,7 @@ class _CustomTabBarState extends State<CustomTabBar> {
                         alignment: Alignment.bottomCenter,
                         child: TweenAnimationBuilder(
                           tween: Tween<double>(begin: 0, end: 1),
-                          curve: Curves.bounceOut,
+                          curve: Curves.decelerate,
                           duration: Duration(milliseconds: 400),
                           builder: (context, value, child) => Container(
                             height: 1.5 * value,

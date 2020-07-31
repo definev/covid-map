@@ -1,3 +1,4 @@
+import 'package:covid_map/cache/flutter_challenge_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:covid_map/generated/locale_base.dart';
 
@@ -10,7 +11,7 @@ class LocDelegate extends LocalizationsDelegate<LocaleBase> {
 
   @override
   Future<LocaleBase> load(Locale locale) async {
-    var lang = 'en';
+    var lang = FlutterChallengeCache.covidCache.currentLang;
     if (isSupported(locale)) lang = locale.languageCode;
     final loc = LocaleBase();
     await loc.load(idMap[lang]);

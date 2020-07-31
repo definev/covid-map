@@ -125,7 +125,7 @@ List<CovidTile> stayAtHome = [
   CovidTile(
     imageUrl: StayAtHome.Chess,
     en: "Board game",
-    vi: "chơi board game",
+    vi: "Chơi board game",
   ),
   CovidTile(
     imageUrl: StayAtHome.Painting,

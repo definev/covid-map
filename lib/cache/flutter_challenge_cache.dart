@@ -7,22 +7,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-initApiData() async {
-  Map<String, dynamic> data = await FlutterChallengerApi.covidapi.getAllData();
-  FlutterChallengeCache.covidCache
-      .setCountryCodeList(data[CacheRoute.countries]);
-  FlutterChallengeCache.covidCache.setCovidData(data[CacheRoute.global]);
-  FlutterChallengeCache.covidCache
-      .setDate(DateTime.parse(data[CacheRoute.date]));
-
-  List<CountryGeoData> countryGeoDataList =
-      await FlutterChallengerApi.covidapi.getCountryGeoData();
-
-  if (countryGeoDataList.isNotEmpty) {
-    FlutterChallengeCache.covidCache.setCountryGeoData(countryGeoDataList);
-  }
-}
-
 class FlutterChallengeCache {
   static CovidCache covidCache;
 
@@ -30,7 +14,6 @@ class FlutterChallengeCache {
     await Hive.initFlutter();
     covidCache = CovidCache();
     await covidCache.init();
-    await initApiData();
   }
 }
 
@@ -39,7 +22,26 @@ class CovidCache {
 
   init() async {
     box = await Hive.openBox("covidCache");
-    if (box.get("lang") == null) box.put("lang", "en");
+    if (box.get(CacheRoute.lang) == null) box.put(CacheRoute.lang, "en");
+    await initApiData();
+  }
+
+  initApiData() async {
+    Map<String, dynamic> data =
+        await FlutterChallengerApi.covidapi.getAllData();
+    List<CountryGeoData> countryGeoDataList =
+        await FlutterChallengerApi.covidapi.getCountryGeoData();
+
+    FlutterChallengeCache.covidCache
+        .setCountryCodeList(data[CacheRoute.countries]);
+    FlutterChallengeCache.covidCache
+        .setGlobalCovidData(data[CacheRoute.global]);
+    FlutterChallengeCache.covidCache
+        .setDate(DateTime.parse(data[CacheRoute.date]));
+
+    if (countryGeoDataList.isNotEmpty) {
+      FlutterChallengeCache.covidCache.setCountryGeoData(countryGeoDataList);
+    }
   }
 
   List<CountryCovidData> get countryCovidData {
@@ -53,6 +55,18 @@ class CovidCache {
     else
       return null;
   }
+
+  CovidData get preCovidData =>
+      CovidData.fromJson(box.get(CacheRoute.preCovidData));
+
+  void setPreCovidData(CovidData covidData) =>
+      box.put(CacheRoute.preCovidData, covidData.toJson());
+
+  CovidData get currentCovidData =>
+      CovidData.fromJson(box.get(CacheRoute.currentCovidData));
+
+  void setCurrentCovidData(CovidData covidData) =>
+      box.put(CacheRoute.currentCovidData, covidData.toJson());
 
   CountryCovidData getCovidDataByName(String name) {
     List<CountryCovidData> data =
@@ -76,9 +90,9 @@ class CovidCache {
     return res == null ? null : res;
   }
 
-  String get currentLang => box.get("lang");
+  String get currentLang => box.get(CacheRoute.lang);
 
-  void setLang(String newLang) => box.put("lang", newLang);
+  void setLang(String newLang) => box.put(CacheRoute.lang, newLang);
 
   void setCountryCodeList(List<CountryCovidData> countryCovidData) => box.put(
         CacheRoute.countries,
@@ -87,7 +101,7 @@ class CovidCache {
 
   CovidData get globalCovidData =>
       CovidData.fromJson(box.get(CacheRoute.global));
-  void setCovidData(CovidData covidData) =>
+  void setGlobalCovidData(CovidData covidData) =>
       box.put(CacheRoute.global, covidData.toJson());
 
   DateTime get updatedDate => DateTime.parse(box.get(CacheRoute.date));
@@ -99,6 +113,11 @@ class CovidCache {
       countryGeoDataList
           .map((countryGeoData) => countryGeoData.toJson())
           .toList());
+
+  List<CountryGeoData> get getAllLocation => box
+      .get(CacheRoute.countryGeoDataList)
+      .map<CountryGeoData>((data) => CountryGeoData.fromJson(data))
+      .toList();
 
   LatLng getLatLngFromName(String country) {
     List<CountryGeoData> listData = box
