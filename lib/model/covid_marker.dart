@@ -6,11 +6,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CovidMarker extends Clusterable {
   final String id;
+  final int index;
   final CountryGeoData countryGeoData;
   final BitmapDescriptor icon;
   final Function() onMarkerTap;
 
   CovidMarker({
+    this.index,
     @required this.id,
     @required this.countryGeoData,
     @required this.icon,
@@ -35,24 +37,30 @@ class CovidMarker extends Clusterable {
           countryGeoData.latitude,
           countryGeoData.longitude,
         ),
-        icon: CovidCluster.bitmapDescriptor,
+        icon: CovidCluster.bitmapList[index],
         onTap: onMarkerTap,
       );
 
   CovidMarker copyWith({
+    int index,
     String id,
     CountryGeoData countryGeoData,
     BitmapDescriptor icon,
     Function() onMarkerTap,
+    dynamic isCluster,
+    dynamic clusterId,
+    dynamic pointsSize,
+    dynamic childMarkerId,
   }) =>
       CovidMarker(
+        index: index ?? this.index,
         countryGeoData: countryGeoData ?? this.countryGeoData,
         id: id ?? this.id,
         icon: icon ?? this.icon,
         onMarkerTap: onMarkerTap ?? this.onMarkerTap,
-        clusterId: this.clusterId,
-        isCluster: this.isCluster,
-        pointsSize: this.pointsSize,
-        childMarkerId: this.childMarkerId,
+        clusterId: clusterId ?? this.clusterId,
+        isCluster: isCluster ?? this.isCluster,
+        pointsSize: pointsSize ?? this.pointsSize,
+        childMarkerId: childMarkerId ?? this.childMarkerId,
       );
 }

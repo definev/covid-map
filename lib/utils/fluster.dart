@@ -1,12 +1,14 @@
+import 'dart:typed_data';
+
 import 'package:covid_map/cache/flutter_challenge_cache.dart';
 import 'package:covid_map/model/country_geo_data.dart';
 import 'package:covid_map/model/covid_marker.dart';
+import 'package:covid_map/utils/image_process.dart';
 import 'package:fluster/fluster.dart';
-import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CovidCluster {
-  static final List<CovidMarker> markers = [];
+  static final Set<CovidMarker> markers = Set<CovidMarker>();
 
   static final List<CountryGeoData> markerLocations =
       FlutterChallengeCache.covidCache.getAllLocation;
@@ -14,49 +16,72 @@ class CovidCluster {
 
   static BitmapDescriptor bitmapDescriptor;
 
+  static List<BitmapDescriptor> bitmapList = [];
+
+  static int getSizeOfInfection(int numOfCase) {
+    if (numOfCase > 1000000) {
+      return 440;
+    } else if (numOfCase > 500000) {
+      return 380;
+    } else if (numOfCase > 300000) {
+      return 300;
+    } else if (numOfCase > 100000) {
+      return 200;
+    } else if (numOfCase > 50000) {
+      return 130;
+    } else {
+      return 60;
+    }
+  }
+
   static init() async {
-    markerLocations.forEach((latLng) {
+    for (var i = 0; i < markerLocations.length; i++) {
       markers.add(
         CovidMarker(
-            id: markerLocations.indexOf(latLng).toString(),
-            countryGeoData: latLng,
-            icon: null),
+          index: i,
+          id: i.toString(),
+          countryGeoData: markerLocations[i],
+          icon: null,
+        ),
       );
-    });
+    }
 
-    await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(devicePixelRatio: 2.5, size: Size(60, 60)),
-      "assets/png/coronavirus/png/marker.png",
-    ).then((value) {
-      bitmapDescriptor = value;
-      int count = -1;
+    for (int i = 0; i < markers.length; i++) {
+      Uint8List markerIcon = await getBytesFromAsset(
+          "assets/png/coronavirus/png/marker.png",
+          getSizeOfInfection(markers.elementAt(i).countryGeoData.confirmed));
 
-      fluster = Fluster<CovidMarker>(
-        minZoom: 2, // The min zoom at clusters will show
-        maxZoom: 4, // The max zoom at clusters will show
-        radius: 100, // Cluster radius in pixels
-        extent: 2048, // Tile extent. Radius is calculated with it.
-        nodeSize: 64, // Size of the KD-tree leaf node.
-        points: CovidCluster.markers, // The list of markers created before
-        createCluster: (
-          // Create cluster marker
-          BaseCluster cluster,
-          double lng,
-          double lat,
-        ) {
-          if (count < markerLocations.length - 1) count++;
+      BitmapDescriptor bitmapDescriptor =
+          BitmapDescriptor.fromBytes(markerIcon);
 
-          return CovidMarker(
-            id: cluster.id.toString(),
-            countryGeoData: CovidCluster.markerLocations[count],
-            icon: bitmapDescriptor,
-            isCluster: cluster.isCluster,
-            clusterId: cluster.id,
-            pointsSize: cluster.pointsSize,
-            childMarkerId: cluster.childMarkerId,
-          );
-        },
-      );
-    });
+      bitmapList.add(bitmapDescriptor);
+    }
+
+    int count = -1;
+
+    fluster = Fluster<CovidMarker>(
+      minZoom: 2, // The min zoom at clusters will show
+      maxZoom: 4, // The max zoom at clusters will show
+      radius: 100, // Cluster radius in pixels
+      extent: 2048, // Tile extent. Radius is calculated with it.
+      nodeSize: 64, // Size of the KD-tree leaf node.
+      points:
+          CovidCluster.markers.toList(), // The list of markers created before
+      createCluster: (
+        // Create cluster marker
+        BaseCluster cluster,
+        double lng,
+        double lat,
+      ) {
+        if (count < markerLocations.length - 1) count++;
+
+        return markers.elementAt(count).copyWith(
+              isCluster: cluster.isCluster,
+              clusterId: cluster.id,
+              pointsSize: cluster.pointsSize,
+              childMarkerId: cluster.childMarkerId,
+            );
+      },
+    );
   }
 }

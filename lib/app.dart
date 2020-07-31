@@ -96,6 +96,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   LocaleBase loc;
 
+  int count = -1;
+
   PageController _pageController = PageController();
 
   String getArrowAnimation({int preNewCase, int newCase}) {
@@ -288,7 +290,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 onCameraMove: (position) => _currentCameraPosition = position,
                 markers:
-                    CovidCluster.fluster.clusters([-180, -85, 180, 85], 3).map(
+                    CovidCluster.fluster.clusters([-180, -85, 180, 85], 7).map(
                   (cluster) {
                     CovidMarker modCluster = cluster.copyWith(
                       onMarkerTap: () {
