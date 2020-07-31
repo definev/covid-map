@@ -591,6 +591,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       preCovidData = covidData;
                                       covidData = FlutterChallengeCache
                                           .covidCache.globalCovidData;
+                                      locText = "Global";
                                       onLoading = false;
                                     });
                                   },

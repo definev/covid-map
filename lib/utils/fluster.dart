@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:covid_map/cache/flutter_challenge_cache.dart';
+import 'package:covid_map/model/country_covid_data.dart';
 import 'package:covid_map/model/country_geo_data.dart';
 import 'package:covid_map/model/covid_marker.dart';
 import 'package:covid_map/utils/image_process.dart';
@@ -10,7 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class CovidCluster {
   static final Set<CovidMarker> markers = Set<CovidMarker>();
 
-  static final List<CountryGeoData> markerLocations =
+  static List<CountryGeoData> markerLocations =
       FlutterChallengeCache.covidCache.getAllLocation;
   static Fluster<CovidMarker> fluster;
 
@@ -35,6 +36,24 @@ class CovidCluster {
   }
 
   static init() async {
+    List<CountryCovidData> countryCovidDataList =
+        FlutterChallengeCache.covidCache.countryCovidData;
+
+    List<CountryGeoData> mergeLocationList = [];
+
+    countryCovidDataList.forEach((element) {
+      CountryGeoData ele = markerLocations.firstWhere(
+          (marker) =>
+              marker.countryCode.toLowerCase() ==
+              element.countryCode.toLowerCase(),
+          orElse: () => null);
+      if (ele != null) {
+        mergeLocationList.add(ele);
+      }
+    });
+
+    markerLocations = mergeLocationList;
+
     for (var i = 0; i < markerLocations.length; i++) {
       markers.add(
         CovidMarker(
