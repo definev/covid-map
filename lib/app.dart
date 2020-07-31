@@ -575,13 +575,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             currentAnimation = SearchState.openSearch;
                             onLoading = true;
 
-                            Future.delayed(Duration(seconds: 1), () async {
-                              await FlutterChallengeCache.covidCache
-                                  .initApiData();
+                            Future.delayed(Duration(seconds: 1), () {
                               setState(() {
                                 currentAnimation = SearchState.loading;
+                                FlutterChallengeCache.covidCache.initApiData();
                                 Future.delayed(
-                                  Duration(seconds: 1, milliseconds: 500),
+                                  Duration(seconds: 4),
                                   () {
                                     setState(() {
                                       refresh = false;
