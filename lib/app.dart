@@ -726,7 +726,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(4)),
                       ),
                       child: SingleChildScrollView(
                         physics: currentAnimation == SearchState.openSearch

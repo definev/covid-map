@@ -32,7 +32,8 @@ dependencies:
   hive:
   hive_flutter: ^0.3.1
   google_fonts:
-  google_maps_flutter: ^0.5.28+1
+  # google_maps_flutter: ^0.5.28+1
+  flutter_google_maps: ^3.8.0
   flare_flutter: ^2.0.5
   flutter_icons: ^1.1.0
   flutter_svg: ^0.18.0
